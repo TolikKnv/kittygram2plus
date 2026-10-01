@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
 
 from rest_framework.throttling import AnonRateThrottle, ScopedRateThrottle
 
@@ -14,14 +14,22 @@ from .serializers import AchievementSerializer, CatSerializer, UserSerializer
 
 from .pagination import CatsPagination
 
+from django_filters.rest_framework import DjangoFilterBackend
+
+
 
 class CatViewSet(viewsets.ModelViewSet):
     queryset = Cat.objects.all()
     serializer_class = CatSerializer
     permission_classes = (OwnerOrReadOnly,)
-    pagination_class = CatsPagination
+    # pagination_class = CatsPagination
+    pagination_class = None
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filterset_fields = ('color','birth_year')
+    search_fields = ('name', )
+    ordering_fields = ('name', 'birth_year')
+    ordering = ('birth_year', )
     throttle_classes = (WorkingHoursRateThrottle, ScopedRateThrottle)
-    throttle_scope = 'low_request'
 
     def get_permissions(self):
     # Если в GET-запросе требуется получить информацию об объекте
